@@ -1,0 +1,35 @@
+{
+  "appId": "com.electron.app",
+  "asar": true,
+  "icon": "public/electron.png",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist-electron",
+    "dist"
+  ],
+  "mac": {
+    "artifactName": "${productName}-${version}.${ext}",
+    "target": [
+      "dmg"
+    ]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}-${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  }
+}
