@@ -56,3 +56,7 @@ npm run build-mac
 ```
 
 <img src="public/微信.png" title="微信" alt="微信" width="300" data-align="center">
+
+```shell
+本工具仅用于学习交流, 使用者盈亏自负!!!
+```
