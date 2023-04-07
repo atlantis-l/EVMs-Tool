@@ -27,6 +27,9 @@
                 <a-input v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
                     :placeholder="store.currentGasPrice"></a-input>
             </a-col>
+            <a-col>
+                <a-alert style="height: 32px;user-select: none;" :message="`矿工费:「${gasFee}」`" type="info" />
+            </a-col>
         </a-row>
         <a-row type="flex">
             <a-col flex="1 0"></a-col>
@@ -50,9 +53,8 @@
         </a-row>
         <a-row :gutter="gutter">
             <a-col span="24">
-                <a-table bordered class="ant-table-striped" :pagination="false"
-                    size="small" :scroll="{ y: platform === 'darwin' ? 190 : 145 }" :dataSource="tableData"
-                    :columns="tablecolumns"
+                <a-table bordered class="ant-table-striped" :pagination="false" size="small"
+                    :scroll="{ y: platform === 'darwin' ? 190 : 145 }" :dataSource="tableData" :columns="tablecolumns"
                     :row-class-name="(_record: any, index: number) => (index % 2 === 1 ? 'table-striped' : null)"></a-table>
             </a-col>
         </a-row>
@@ -89,8 +91,12 @@ export default defineComponent({
             transferAmount: ref<string>(''),
             //最大燃料价格
             maxFeePerGas: ref<string>(''),
+            //所需燃料
+            gasFee: ref<string>('0'),
             //Ether To Wei转换
             toWei: store().web3.utils.toWei,
+            //Wei To Ether转换
+            fromWei: store().web3.utils.fromWei,
         }
     },
     computed: {
@@ -149,6 +155,20 @@ export default defineComponent({
                 this.toAddress,
                 this.toWei(this.transferAmount, await this.unit)
             ).estimateGas({ from: this.fromAddress })
+        }
+    },
+    watch: {
+        async maxFeePerGas() {
+            try {
+                const feePerGas = parseFloat(this.toWei(this.maxFeePerGas, 'Gwei'))
+                if (this.store.tokenType === '原生代币') {
+                    this.gasFee = this.fromWei(feePerGas * 21000 + '', 'ether')
+                } else {
+                    this.gasFee = this.fromWei(feePerGas * await this.gas + '', 'ether')
+                }
+            } catch (_) {
+                this.gasFee = '0'
+            }
         }
     },
     methods: {
