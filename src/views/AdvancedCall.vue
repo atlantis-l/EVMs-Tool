@@ -185,7 +185,8 @@ export default defineComponent({
                     if (o.type === 'function' && !['view', 'pure', 'constant'].includes(o.stateMutability)) {
                         contractFunctions.push({
                             label: o.name,
-                            value: o.name
+                            value: o.name,
+                            key: o.name
                         })
                     }
                 })
@@ -253,7 +254,12 @@ export default defineComponent({
             }
         },
         contractABI() {
-            try { this.jsonABI = JSON.parse(this.contractABI) } catch (e) {
+            try {
+                this.jsonABI = JSON.parse(this.contractABI)
+                this.jsonABI.forEach((o: AbiItem) => {
+                    o.name = `「${o.name}」 #${this.web3.eth.accounts.create().address.substring(6,16).toLocaleLowerCase()}`
+                })
+            } catch (e) {
 
             }
         }
