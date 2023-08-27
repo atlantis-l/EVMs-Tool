@@ -59,7 +59,7 @@
             <a-col flex="0 1">
                 <a-popconfirm placement="bottomRight" title="加速执行「合约调用」" ok-text="确认" cancel-text="取消"
                     @confirm="contractCall(true)">
-                    <a-tooltip placement="topRight">
+                    <a-tooltip placement="left">
                         <template #title>
                             <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
                         </template>
