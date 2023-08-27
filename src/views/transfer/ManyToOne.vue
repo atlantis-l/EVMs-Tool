@@ -18,10 +18,10 @@
                 <a-input v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
                     :placeholder="store.currentGasPrice"></a-input>
             </a-col>
-            <a-col span="6" v-show="store.tokenType === '原生代币' ? false : true">
+            <a-col span="6" v-show="store.tokenType !== '原生代币'">
                 <a-input :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
             </a-col>
-            <a-col span="6" v-show="store.tokenType === '原生代币' ? false : true">
+            <a-col span="6" v-show="store.tokenType !== '原生代币'">
                 <a-button type="primary" @click="estimateGas" ghost>燃料限制估算</a-button>
             </a-col>
         </a-row>
@@ -271,9 +271,9 @@ export default defineComponent({
             }
 
             if (this.toAddress.trim().length === 0
-                || this.gas.trim().length === 0
                 || this.maxFeePerGas.trim().length === 0
                 || this.data.length === 0
+                || (this.gas.trim().length === 0 && this.store.tokenType === '合约代币')
             ) {
                 message('warning', '代币转账', '信息未填充完整或钱包文件未导入')
                 return
