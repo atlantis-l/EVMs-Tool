@@ -207,6 +207,10 @@ export default defineComponent({
             if (this.gas.trim().length === 0) return 0
             if (this.data.length === 0) return 0
             return new BigNumber(parseFloat(`${this.singleFee}`) * this.data.length).toFixed()
+        },
+        originFunctionName() {
+            const fn = this.functionName?.split(' ')[0]
+            return fn?.substring(1, fn.length - 1)
         }
     },
     watch: {
@@ -257,7 +261,7 @@ export default defineComponent({
             try {
                 this.jsonABI = JSON.parse(this.contractABI)
                 this.jsonABI.forEach((o: AbiItem) => {
-                    o.name = `「${o.name}」 #${this.web3.eth.accounts.create().address.substring(6,16).toLocaleLowerCase()}`
+                    o.name = `「${o.name}」 #${this.web3.eth.accounts.create().address.substring(6, 16).toLocaleLowerCase()}`
                 })
             } catch (e) {
 
@@ -335,7 +339,7 @@ export default defineComponent({
             let asyncFunc = AsyncFunction(
                 "contract",
                 `
-                const result = contract.methods.${this.functionName}(${this.concatParameters()})
+                const result = contract.methods.${this.originFunctionName}(${this.concatParameters()})
                 .encodeABI()
 
                 return result;
@@ -393,7 +397,7 @@ export default defineComponent({
             let asyncFunc = AsyncFunction(
                 "contract",
                 `
-                const result = await contract.methods.${this.functionName}(${this.concatParameters()})
+                const result = await contract.methods.${this.originFunctionName}(${this.concatParameters()})
                 .estimateGas({from:'${address}'})
 
                 return result;

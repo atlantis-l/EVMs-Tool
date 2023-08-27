@@ -32,9 +32,10 @@
             </li>
         </ul>
         <h2 class="atx" id="如果对你有帮助-可以请我喝一杯咖啡☕️">如果对你有帮助, 可以请我喝一杯咖啡☕️</h2>
-        <pre><code class="fenced-code-block language-shell">微信: Atlantis_00L</code></pre>
-        <pre><code class="fenced-code-block language-shell">钱包地址: 0xa651316531d6061E292969EBeF782bf646bFbd7a</code></pre>
-        <img data-align="center" width="300" alt="微信" title="微信" src="/微信.png">
+        <pre><code class="fenced-code-block language-shell">钱包地址: 0x6eafbeab09A6b0710063f7F1f076436A6b563ccf</code></pre>
+        <h2 class="atx" id="⚠️免责声明">⚠️免责声明</h2>
+        <pre><code class="fenced-code-block language-shell">本工具仅用于学习交流, 使用者盈亏自负!!!</code></pre>
+        
     </article>
 </template>
 

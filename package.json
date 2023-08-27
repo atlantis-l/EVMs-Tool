@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^6.1.0",
-    "ant-design-vue": "^3.2.15",
+    "ant-design-vue": "4.0.1",
     "electron-context-menu": "^3.6.1",
     "file-saver": "^2.0.5",
     "papaparse": "^5.4.0",

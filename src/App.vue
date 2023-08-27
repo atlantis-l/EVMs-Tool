@@ -109,7 +109,7 @@
                         </a-col>
                     </a-row>
 
-                    <a-modal v-model:visible="visible" title="自定义主网" style="top: 180px" @cancel="handleModalCancel">
+                    <a-modal v-model:open="visible" title="自定义主网" style="top: 180px" @cancel="handleModalCancel">
                         <a-input addonBefore="网址" v-model:value="customMainnet" placeholder="主网必须兼容以太坊虚拟机..."></a-input>
                         <template #footer>
                             <a-button type="primary" @click="handleModalOk">确定</a-button>

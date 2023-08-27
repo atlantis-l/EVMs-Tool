@@ -48,14 +48,8 @@ npm run build-mac
 ## 如果对你有帮助, 可以请我喝一杯咖啡☕️
 
 ```shell
-微信: Atlantis_00L
+钱包地址: 0x6eafbeab09A6b0710063f7F1f076436A6b563ccf
 ```
-
-```shell
-钱包地址: 0xa651316531d6061E292969EBeF782bf646bFbd7a
-```
-
-<img src="public/微信.png" title="微信" alt="微信" width="300" data-align="center">
 
 ## ⚠️免责声明
 
