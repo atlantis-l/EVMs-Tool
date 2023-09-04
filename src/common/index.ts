@@ -23,8 +23,18 @@ const message = (type: 'warning' | 'error' | 'info' | 'success', message: string
 
 const convertDecimalsToUnit = (decimals: string) => {
     switch (decimals) {
+        case '0':
+            return 'wei'
+        case '3':
+            return 'kwei'
+        case '6':
+            return 'mwei'
         case '9':
             return 'gwei'
+        case '12':
+            return 'microether'
+        case '15':
+            return 'milliether'
         case '18':
             return 'ether'
     }
