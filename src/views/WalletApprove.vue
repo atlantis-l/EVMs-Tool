@@ -6,7 +6,7 @@
                     placeholder="输入要授权的代币合约地址"></a-input>
             </a-col>
             <a-col span="12">
-                <a-input v-model:value="spender" addonBefore="授权地址" placeholder="输入使用授权的地址"></a-input>
+                <a-input allow-clear v-model:value="spender" addonBefore="授权地址" placeholder="输入使用授权的地址"></a-input>
             </a-col>
         </a-row>
         <a-row :gutter="gutter">
@@ -16,11 +16,11 @@
         </a-row>
         <a-row :gutter="gutter">
             <a-col span="6">
-                <a-input v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
+                <a-input allow-clear v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
                     :placeholder="store.currentGasPrice"></a-input>
             </a-col>
             <a-col span="6">
-                <a-input :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
+                <a-input allow-clear :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
             </a-col>
             <a-col span="6">
                 <a-button type="primary" @click="estimateGas" ghost>燃料限制估算</a-button>

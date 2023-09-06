@@ -2,7 +2,7 @@
     <div>
         <a-row :gutter="20">
             <a-col span="6">
-                <a-input v-model:value="amount">
+                <a-input allow-clear v-model:value="amount">
                     <template #addonBefore>
                         钱包数量
                     </template>

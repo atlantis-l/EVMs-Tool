@@ -2,7 +2,7 @@
     <div>
         <a-row :gutter="20">
             <a-col span="12">
-                <a-input v-model:value="queryBase" :placeholder="`输入${queryBaseType}:「0x开头」`">
+                <a-input allow-clear v-model:value="queryBase" :placeholder="`输入${queryBaseType}:「0x开头」`">
                     <template #addonBefore>
                         <a-select v-model:value="queryBaseType">
                             <a-select-option value="钱包地址">钱包地址</a-select-option>

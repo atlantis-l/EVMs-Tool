@@ -24,7 +24,7 @@
         </a-row>
         <a-row :gutter="gutter">
             <a-col span="6">
-                <a-input v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
+                <a-input allow-clear v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
                     :placeholder="store.currentGasPrice"></a-input>
             </a-col>
             <a-col>

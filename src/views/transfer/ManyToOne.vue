@@ -2,7 +2,7 @@
     <div>
         <a-row :gutter="gutter">
             <a-col span="12">
-                <a-input v-model:value="toAddress" addonBefore="转入地址" placeholder="输入要转入的地址"></a-input>
+                <a-input allow-clear v-model:value="toAddress" addonBefore="转入地址" placeholder="输入要转入的地址"></a-input>
             </a-col>
             <a-col span="12" v-show="store.tokenType === '合约代币'">
                 <a-input allow-clear v-model:value="contractAddress" addonBefore="合约地址" placeholder="不填则按导入文件为准"></a-input>
@@ -15,11 +15,11 @@
         </a-row>
         <a-row :gutter="gutter">
             <a-col span="6">
-                <a-input v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
+                <a-input allow-clear v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
                     :placeholder="store.currentGasPrice"></a-input>
             </a-col>
             <a-col span="6" v-show="store.tokenType !== '原生代币'">
-                <a-input :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
+                <a-input allow-clear :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
             </a-col>
             <a-col span="6" v-show="store.tokenType !== '原生代币'">
                 <a-button type="primary" @click="estimateGas" ghost>燃料限制估算</a-button>

@@ -6,7 +6,7 @@
                     placeholder="输入要进行调用的合约地址"></a-input>
             </a-col>
             <a-col span="12">
-                <a-input v-model:value="contractABI" addonBefore="合约ABI" placeholder="粘贴合约代码页面的ABI到此处"></a-input>
+                <a-input allow-clear v-model:value="contractABI" addonBefore="合约ABI" placeholder="粘贴合约代码页面的ABI到此处"></a-input>
             </a-col>
         </a-row>
         <a-row :gutter="gutter">
@@ -19,7 +19,7 @@
         <a-row :gutter="gutter">
             <template v-for="parameter in parameters">
                 <a-col span="12" style="margin-bottom: 20px;">
-                    <a-input :placeholder="`输入「${parameter.name}」`" :addonBefore="parameter.name"
+                    <a-input allow-clear :placeholder="`输入「${parameter.name}」`" :addonBefore="parameter.name"
                         v-model:value="parameter.value" />
                 </a-col>
             </template>
@@ -27,11 +27,11 @@
         <a-row :gutter="gutter" style="margin-top: -20px;margin-bottom: 40px;" type="flex">
             <a-col flex="1 0"></a-col>
             <a-col flex="0 1 186px">
-                <a-input v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
+                <a-input allow-clear v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
                     :placeholder="store.currentGasPrice"></a-input>
             </a-col>
             <a-col flex="0 1 186px">
-                <a-input :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
+                <a-input allow-clear :placeholder="currentGas" v-model:value="gas" style="text-align: center;" addonBefore="燃料限制" />
             </a-col>
             <a-col flex="0 1">
                 <a-button type="primary" @click="estimateGas" ghost>燃料限制估算</a-button>
