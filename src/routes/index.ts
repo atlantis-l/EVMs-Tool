@@ -9,6 +9,8 @@ import MultiQuery from '../views/balance-query/MultiQuery.vue'
 import WalletCreate from '../views/WalletCreate.vue'
 import WalletApprove from '../views/WalletApprove.vue'
 import AdvancedCall from '../views/AdvancedCall.vue'
+import Transfer from '../views/nft/Transfer.vue'
+import Approve from '../views/nft/Approve.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -70,6 +72,22 @@ const router = createRouter({
       component: AdvancedCall
     },
     {
+      name: 'NFT',
+      path: '/nft',
+      children: [
+        {
+          name: '转账',
+          path: 'transfer',
+          component: Transfer
+        },
+        {
+          name: '授权',
+          path: 'approve',
+          component: Approve
+        }
+      ]
+    },
+    {
       name: '钱包创建',
       path: '/wallet-create',
       component: WalletCreate
@@ -78,7 +96,7 @@ const router = createRouter({
 })
 
 router.beforeEach((guard) => {
-  if (guard.path.includes('transfer') || guard.path.includes('balance-query')) {
+  if (guard.path.startsWith('/transfer') || guard.path.startsWith('/balance-query')) {
     store().changeShowTokenType(true)
   } else {
     store().changeShowTokenType(false)

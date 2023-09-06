@@ -43,6 +43,14 @@
                         <span>钱包授权</span>
                     </a-menu-item>
 
+                    <a-sub-menu title="NFT" key="nft">
+                        <template #icon>
+                            <CodeSandboxSquareFilled />
+                        </template>
+                        <a-menu-item key="transfer">转账</a-menu-item>
+                        <a-menu-item key="approve">授权</a-menu-item>
+                    </a-sub-menu>
+
                     <a-menu-item key="advanced-call">
                         <template #icon>
                             <CodeFilled />
@@ -144,7 +152,8 @@ import {
     InteractionFilled,
     DollarCircleFilled,
     SafetyCertificateFilled,
-    CodeFilled
+    CodeFilled,
+    CodeSandboxSquareFilled
 } from '@ant-design/icons-vue'
 import { defineComponent, ref } from 'vue'
 import store from './stores/store'
@@ -163,7 +172,8 @@ export default defineComponent({
         InteractionFilled,
         DollarCircleFilled,
         SafetyCertificateFilled,
-        CodeFilled
+        CodeFilled,
+        CodeSandboxSquareFilled
     },
     data() {
         return {
