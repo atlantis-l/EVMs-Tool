@@ -50,12 +50,12 @@ const router = createRouter({
       path: "/balance-query",
       children: [
         {
-          name: "单钱包查询",
+          name: "单钱包",
           path: "single-query",
           component: SingleQuery,
         },
         {
-          name: "多钱包查询",
+          name: "多钱包",
           path: "multi-query",
           component: MultiQuery,
         },

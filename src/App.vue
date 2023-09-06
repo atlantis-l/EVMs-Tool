@@ -46,8 +46,8 @@
             <template #icon>
               <DollarCircleFilled />
             </template>
-            <a-menu-item key="single-query">单钱包查询</a-menu-item>
-            <a-menu-item key="multi-query">多钱包查询</a-menu-item>
+            <a-menu-item key="single-query">单钱包</a-menu-item>
+            <a-menu-item key="multi-query">多钱包</a-menu-item>
           </a-sub-menu>
 
           <a-menu-item key="wallet-approve">
