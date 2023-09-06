@@ -1,255 +1,321 @@
 <template>
-    <div>
-        <a-row :gutter="gutter">
-            <a-col span="12">
-                <a-input v-model:value="fromAddress" readonly addonBefore="转出地址" placeholder="根据私钥自动生成"></a-input>
-            </a-col>
-            <a-col span="12">
-                <a-input-password allow-clear v-model:value="privateKey" addonBefore="转出私钥"
-                    placeholder="输入要转出的钱包私钥"></a-input-password>
-            </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-            <a-col span="12">
-                <a-input allow-clear v-model:value="toAddress" addonBefore="转入地址" placeholder="输入要转入的钱包地址"></a-input>
-            </a-col>
-            <a-col span="12" v-show="store.tokenType === '合约代币'">
-                <a-input allow-clear v-model:value="contractAddress" addonBefore="合约地址" placeholder="输入代币的合约地址"></a-input>
-            </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-            <a-col span="12">
-                <a-input allow-clear v-model:value="transferAmount" addonBefore="转账数量" placeholder="输入要转账的代币数量"></a-input>
-            </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-            <a-col span="6">
-                <a-input allow-clear v-model:value="maxFeePerGas" style="text-align: center;" addonBefore="燃料价格"
-                    :placeholder="store.currentGasPrice"></a-input>
-            </a-col>
-            <a-col>
-                <a-alert style="height: 32px;user-select: none;" :message="`矿工费:「${gasFee}」`" type="info" />
-            </a-col>
-        </a-row>
-        <a-row type="flex">
-            <a-col flex="1 0"></a-col>
-            <a-col flex="0 1 168px">
-                <a-popconfirm placement="bottomRight" :title="`发送「${store.tokenType}」`" ok-text="确认" cancel-text="取消"
-                    @confirm="transferToken(false)">
-                    <a-button type="primary">发送「{{ store.tokenType }}」</a-button>
-                </a-popconfirm>
-            </a-col>
-            <a-col flex="0 1">
-                <a-popconfirm placement="bottomRight" :title="`加速交易「${store.tokenType}」`" ok-text="确认" cancel-text="取消"
-                    @confirm="transferToken(true)">
-                    <a-tooltip placement="topRight">
-                        <template #title>
-                            <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
-                        </template>
-                        <a-button type="primary">加速交易「{{ store.tokenType }}」</a-button>
-                    </a-tooltip>
-                </a-popconfirm>
-            </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-            <a-col span="24">
-                <a-table bordered class="ant-table-striped" :pagination="false" size="small"
-                    :scroll="{ y: platform === 'darwin' ? 190 : 145 }" :dataSource="tableData" :columns="tablecolumns"
-                    :row-class-name="(_record: any, index: number) => (index % 2 === 1 ? 'table-striped' : null)"></a-table>
-            </a-col>
-        </a-row>
-    </div>
+  <div>
+    <a-row :gutter="gutter">
+      <a-col span="12">
+        <a-input
+          v-model:value="fromAddress"
+          readonly
+          addonBefore="转出地址"
+          placeholder="根据私钥自动生成"
+        ></a-input>
+      </a-col>
+      <a-col span="12">
+        <a-input-password
+          allow-clear
+          v-model:value="privateKey"
+          addonBefore="转出私钥"
+          placeholder="输入要转出的钱包私钥"
+        ></a-input-password>
+      </a-col>
+    </a-row>
+    <a-row :gutter="gutter">
+      <a-col span="12">
+        <a-input
+          allow-clear
+          v-model:value="toAddress"
+          addonBefore="转入地址"
+          placeholder="输入要转入的钱包地址"
+        ></a-input>
+      </a-col>
+      <a-col span="12" v-show="store.tokenType === '合约代币'">
+        <a-input
+          allow-clear
+          v-model:value="contractAddress"
+          addonBefore="合约地址"
+          placeholder="输入代币的合约地址"
+        ></a-input>
+      </a-col>
+    </a-row>
+    <a-row :gutter="gutter">
+      <a-col span="12">
+        <a-input
+          allow-clear
+          v-model:value="transferAmount"
+          addonBefore="转账数量"
+          placeholder="输入要转账的代币数量"
+        ></a-input>
+      </a-col>
+    </a-row>
+    <a-row :gutter="gutter">
+      <a-col span="6">
+        <a-input
+          allow-clear
+          v-model:value="maxFeePerGas"
+          style="text-align: center"
+          addonBefore="燃料价格"
+          :placeholder="store.currentGasPrice"
+        ></a-input>
+      </a-col>
+      <a-col>
+        <a-alert
+          style="height: 32px; user-select: none"
+          :message="`矿工费:「${gasFee}」`"
+          type="info"
+        />
+      </a-col>
+    </a-row>
+    <a-row type="flex">
+      <a-col flex="1 0"></a-col>
+      <a-col flex="0 1 168px">
+        <a-popconfirm
+          placement="bottomRight"
+          :title="`发送「${store.tokenType}」`"
+          ok-text="确认"
+          cancel-text="取消"
+          @confirm="transferToken(false)"
+        >
+          <a-button type="primary">发送「{{ store.tokenType }}」</a-button>
+        </a-popconfirm>
+      </a-col>
+      <a-col flex="0 1">
+        <a-popconfirm
+          placement="bottomRight"
+          :title="`加速交易「${store.tokenType}」`"
+          ok-text="确认"
+          cancel-text="取消"
+          @confirm="transferToken(true)"
+        >
+          <a-tooltip placement="topRight">
+            <template #title>
+              <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
+            </template>
+            <a-button type="primary"
+              >加速交易「{{ store.tokenType }}」</a-button
+            >
+          </a-tooltip>
+        </a-popconfirm>
+      </a-col>
+    </a-row>
+    <a-row :gutter="gutter">
+      <a-col span="24">
+        <a-table
+          bordered
+          class="ant-table-striped"
+          :pagination="false"
+          size="small"
+          :scroll="{ y: platform === 'darwin' ? 190 : 145 }"
+          :dataSource="tableData"
+          :columns="tablecolumns"
+          :row-class-name="(_record: any, index: number) => (index % 2 === 1 ? 'table-striped' : null)"
+        ></a-table>
+      </a-col>
+    </a-row>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import store from '../../stores/store'
-import { message, abi, convertDecimalsToUnit } from '../../common'
-import { TransactionConfig } from 'web3-core'
+import { defineComponent, ref } from "vue";
+import store from "../../stores/store";
+import { message, abi, convertDecimalsToUnit } from "../../common";
+import { TransactionConfig } from "web3-core";
 
 interface BaseInfo {
-    nonce: number,
-    chainId: number
+  nonce: number;
+  chainId: number;
 }
 
 export default defineComponent({
-    data() {
-        return {
-            //列间隔
-            gutter: 20,
-            //全局状态变量
-            store: store(),
-            //platform
-            platform: process.platform,
-            //私钥
-            privateKey: ref<string>(''),
-            //转入地址
-            toAddress: ref<string>(''),
-            //合约地址
-            contractAddress: ref<string>(''),
-            //转账数量
-            transferAmount: ref<string>(''),
-            //最大燃料价格
-            maxFeePerGas: ref<string>(''),
-            //所需燃料
-            gasFee: ref<string>('0'),
-            //Ether To Wei转换
-            toWei: store().web3.utils.toWei,
-            //Wei To Ether转换
-            fromWei: store().web3.utils.fromWei,
-        }
+  data() {
+    return {
+      //列间隔
+      gutter: 20,
+      //全局状态变量
+      store: store(),
+      //platform
+      platform: process.platform,
+      //私钥
+      privateKey: ref<string>(""),
+      //转入地址
+      toAddress: ref<string>(""),
+      //合约地址
+      contractAddress: ref<string>(""),
+      //转账数量
+      transferAmount: ref<string>(""),
+      //最大燃料价格
+      maxFeePerGas: ref<string>(""),
+      //所需燃料
+      gasFee: ref<string>("0"),
+      //Ether To Wei转换
+      toWei: store().web3.utils.toWei,
+      //Wei To Ether转换
+      fromWei: store().web3.utils.fromWei,
+    };
+  },
+  computed: {
+    //表格表头数据
+    tablecolumns(): {}[] {
+      return [
+        {
+          title:
+            "交易哈希" +
+            //@ts-ignore
+            (this.store.txHash.oneToOne?.length > 0
+              ? `(${this.store.txHash.oneToOne?.length}笔)`
+              : ""),
+          dataIndex: "txHash",
+          key: "txHash",
+        },
+      ];
     },
-    computed: {
-        //表格表头数据
-        tablecolumns(): {}[] {
-            return [
-                {
-                    //@ts-ignore
-                    title: '交易哈希' + ((this.store.txHash.oneToOne?.length > 0) ? `(${this.store.txHash.oneToOne?.length}笔)` : ''),
-                    dataIndex: 'txHash',
-                    key: 'txHash',
-                }
-            ]
-        },
-        //表身数据
-        tableData() {
-            const txHashList: {}[] = []
-            this.store.txHash.oneToOne?.forEach((value, _index, _array) => {
-                txHashList.push({
-                    key: value,
-                    txHash: value
-                })
-            })
-            return txHashList
-        },
-        //根据私钥计算出转出地址
-        fromAddress() {
-            try {
-                const account = this.store.web3.eth.accounts.wallet.add(this.privateKey)
-                return account.address
-            } catch (_) {
-                return ''
-            }
-        },
-        //合约对象
-        contract() {
-            return new this.store.web3.eth.Contract(
-                abi,
-                this.contractAddress,
-            )
-        },
-        //根据合约小数位数转换为以太单位
-        async unit() {
-            return convertDecimalsToUnit(await this.contract.methods.decimals().call())
-        },
-        //计算出与合约交互的十六进制数据
-        async data() {
-            return this.contract.methods.transfer(
-                this.toAddress,
-                this.toWei(this.transferAmount, await this.unit)
-            ).encodeABI()
-        },
-        //根据方法和参数计算出所需的燃料数量
-        async gas() {
-            return this.contract.methods.transfer(
-                this.toAddress,
-                this.toWei(this.transferAmount, await this.unit)
-            ).estimateGas({ from: this.fromAddress })
-        }
+    //表身数据
+    tableData() {
+      const txHashList: {}[] = [];
+      this.store.txHash.oneToOne?.forEach((value, _index, _array) => {
+        txHashList.push({
+          key: value,
+          txHash: value,
+        });
+      });
+      return txHashList;
     },
-    watch: {
-        async maxFeePerGas() {
-            try {
-                const feePerGas = parseFloat(this.toWei(this.maxFeePerGas, 'Gwei'))
-                if (this.store.tokenType === '原生代币') {
-                    this.gasFee = this.fromWei(feePerGas * 21000 + '', 'ether')
-                } else {
-                    this.gasFee = this.fromWei(feePerGas * await this.gas + '', 'ether')
-                }
-            } catch (_) {
-                this.gasFee = '0'
-            }
-        }
+    //根据私钥计算出转出地址
+    fromAddress() {
+      try {
+        const account = this.store.web3.eth.accounts.wallet.add(
+          this.privateKey
+        );
+        return account.address;
+      } catch (_) {
+        return "";
+      }
     },
-    methods: {
-        //代币转账
-        async transferToken(accelerate: boolean) {
-            try {
-                const baseInfo = await this.queryBaseInfo(this.fromAddress)
-                this.transfer(baseInfo, accelerate)
-            } catch (e) {
-                console.log(e)
-                message('warning', '代币转账', '执行出错,请重新执行')
-            }
-        },
-        //执行转账
-        async transfer({ nonce, chainId }: BaseInfo, accelerate: boolean) {
+    //合约对象
+    contract() {
+      return new this.store.web3.eth.Contract(abi, this.contractAddress);
+    },
+    //根据合约小数位数转换为以太单位
+    async unit() {
+      return convertDecimalsToUnit(
+        await this.contract.methods.decimals().call()
+      );
+    },
+    //计算出与合约交互的十六进制数据
+    async data() {
+      return this.contract.methods
+        .transfer(
+          this.toAddress,
+          this.toWei(this.transferAmount, await this.unit)
+        )
+        .encodeABI();
+    },
+    //根据方法和参数计算出所需的燃料数量
+    async gas() {
+      return this.contract.methods
+        .transfer(
+          this.toAddress,
+          this.toWei(this.transferAmount, await this.unit)
+        )
+        .estimateGas({ from: this.fromAddress });
+    },
+  },
+  watch: {
+    async maxFeePerGas() {
+      try {
+        const feePerGas = parseFloat(this.toWei(this.maxFeePerGas, "Gwei"));
+        if (this.store.tokenType === "原生代币") {
+          this.gasFee = this.fromWei(feePerGas * 21000 + "", "ether");
+        } else {
+          this.gasFee = this.fromWei(
+            feePerGas * (await this.gas) + "",
+            "ether"
+          );
+        }
+      } catch (_) {
+        this.gasFee = "0";
+      }
+    },
+  },
+  methods: {
+    //代币转账
+    async transferToken(accelerate: boolean) {
+      try {
+        const baseInfo = await this.queryBaseInfo(this.fromAddress);
+        this.transfer(baseInfo, accelerate);
+      } catch (e) {
+        console.error(e);
+        message("warning", "代币转账", "执行出错,请重新执行");
+      }
+    },
+    //执行转账
+    async transfer({ nonce, chainId }: BaseInfo, accelerate: boolean) {
+      const config: TransactionConfig = {
+        // from?: string | number;
+        from: this.fromAddress,
+        // nonce?: number;
+        nonce: nonce,
+        // chainId?: number;
+        chainId: chainId,
+      };
 
-            const config: TransactionConfig = {
-                // from?: string | number;
-                from: this.fromAddress,
-                // nonce?: number;
-                nonce: nonce,
-                // chainId?: number;
-                chainId: chainId
-            }
+      if (this.store.tokenType === "原生代币") {
+        config.to = this.toAddress;
+        config.value = this.toWei(this.transferAmount.trim(), "ether");
+        config.gas = "21000";
+      } else {
+        config.to = this.contractAddress;
+        config.data = await this.data;
+        config.gas = await this.gas;
+      }
 
-            if (this.store.tokenType === '原生代币') {
-                config.to = this.toAddress
-                config.value = this.toWei(this.transferAmount.trim(), 'ether')
-                config.gas = '21000'
-            } else {
-                config.to = this.contractAddress
-                config.data = await this.data
-                config.gas = await this.gas
-            }
+      if (accelerate) {
+        config.gasPrice = this.toWei(this.maxFeePerGas, "gwei");
+      } else {
+        config.maxFeePerGas = this.toWei(this.maxFeePerGas, "gwei");
+        config.maxPriorityFeePerGas = this.toWei(
+          this.store.maxPriorityFeePerGas,
+          "gwei"
+        );
+      }
 
-            if (accelerate) {
-                config.gasPrice = this.toWei(this.maxFeePerGas, 'gwei')
-            } else {
-                config.maxFeePerGas = this.toWei(this.maxFeePerGas, 'gwei')
-                config.maxPriorityFeePerGas = this.toWei(this.store.maxPriorityFeePerGas, 'gwei')
-            }
-
-            this.sendTransaction(config)
-        },
-        //查询nonce和chainId
-        async queryBaseInfo(address: string) {
-            return {
-                nonce: await this.store.web3.eth.getTransactionCount(address),
-                chainId: await this.store.web3.eth.getChainId()
-            }
-        },
-        //添加txHash到全局存储
-        addTxHash(txHash: string) {
-            this.store.addTxHash('txHash.oneToOne', txHash)
-            message('success', '代币转账', '交易已发送')
-        },
-        //发送交易
-        sendTransaction(config: TransactionConfig) {
-            this.store.web3.eth.sendTransaction(config)
-                .once('transactionHash', (txHash) => {
-
-                    this.addTxHash(txHash)
-
-                }).catch((e: Error) => {
-                    this.catchError(e)
-                })
-        },
-        //错误处理
-        catchError(e: Error) {
-            if (e.message.toLowerCase().includes('exist')) {
-                message('warning', '代币转账', '当前存在交易,尝试使用加速交易')
-            } else {
-                console.log(e)
-            }
-        },
-    }
-})
+      this.sendTransaction(config);
+    },
+    //查询nonce和chainId
+    async queryBaseInfo(address: string) {
+      return {
+        nonce: await this.store.web3.eth.getTransactionCount(address),
+        chainId: await this.store.web3.eth.getChainId(),
+      };
+    },
+    //添加txHash到全局存储
+    addTxHash(txHash: string) {
+      this.store.addTxHash("txHash.oneToOne", txHash);
+      message("success", "代币转账", "交易已发送");
+    },
+    //发送交易
+    sendTransaction(config: TransactionConfig) {
+      this.store.web3.eth
+        .sendTransaction(config)
+        .once("transactionHash", (txHash) => {
+          this.addTxHash(txHash);
+        })
+        .catch((e: Error) => {
+          this.catchError(e);
+        });
+    },
+    //错误处理
+    catchError(e: Error) {
+      if (e.message.toLowerCase().includes("exist")) {
+        message("warning", "代币转账", "当前存在交易,尝试使用加速交易");
+      } else {
+        console.error(e);
+      }
+    },
+  },
+});
 </script>
 
 <style scoped>
 .ant-table-striped :deep(.table-striped) td {
-    background-color: #fafafa;
+  background-color: #fafafa;
 }
 </style>
