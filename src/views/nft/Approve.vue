@@ -184,9 +184,6 @@ export default defineComponent({
     };
   },
   computed: {
-    web3() {
-      return this.store.web3;
-    },
     //合约对象
     contract() {
       return new this.store.web3.eth.Contract(nft_abi, this.contractAddress);
@@ -333,11 +330,11 @@ export default defineComponent({
       privateKey: string
     ) {
       //TODO send signed transaction
-      this.web3.eth.accounts.signTransaction(
+      this.store.web3.eth.accounts.signTransaction(
         config,
         privateKey,
         (_error, signedTransaction) => {
-          this.web3.eth
+          this.store.web3.eth
             .sendSignedTransaction(
               //@ts-ignore
               signedTransaction.rawTransaction
