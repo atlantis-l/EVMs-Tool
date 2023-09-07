@@ -205,13 +205,6 @@ export default defineComponent({
     },
   },
   watch: {
-    async contractAddress() {
-      try {
-        const decimals = await this.contract.methods.decimals().call();
-        //@ts-ignore
-        this.unit = convertDecimalsToUnit(decimals);
-      } catch (_error) {}
-    },
     checked() {
       this.approveNftId = "";
     },
