@@ -78,10 +78,15 @@
           :beforeUpload="() => false"
           @change="importWalletFile"
         >
-          <a-button type="primary" ghost>
-            <FileAddFilled />
-            导入钱包文件
-          </a-button>
+          <a-tooltip>
+            <template #title>
+              <span>若文件中有多个钱包, 只取第一个钱包</span>
+            </template>
+            <a-button type="primary" ghost>
+              <FileAddFilled />
+              导入钱包文件
+            </a-button>
+          </a-tooltip>
         </a-upload>
       </a-col>
       <a-col flex="0 1 138.83px">
