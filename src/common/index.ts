@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { notification } from "ant-design-vue";
 import { AbiItem } from "web3-utils";
 
