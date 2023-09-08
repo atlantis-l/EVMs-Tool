@@ -36,13 +36,21 @@
           placeholder="1:授权 0:取消"
         ></a-input>
       </a-col>
-      <a-col span="12">
+      <a-col span="3">
         <a-switch
           style="top: 5px"
           v-model:checked="checked"
           checked-children="单个"
           un-checked-children="全部"
         />
+      </a-col>
+      <a-col span="9">
+        <a-tooltip>
+          <template #title>
+            <span>点击填入「OpenSea」授权地址</span>
+          </template>
+          <a-button type="primary" ghost @click="fillSpender()">「OpenSea」授权</a-button>
+        </a-tooltip>
       </a-col>
     </a-row>
     <a-row :gutter="gutter">
@@ -133,7 +141,7 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import store from "../../stores/store";
-import { message, nft_abi, convertDecimalsToUnit } from "../../common";
+import { message, nft_abi } from "../../common";
 import { TransactionConfig } from "web3-core";
 import { FileAddFilled } from "@ant-design/icons-vue";
 import Papa from "papaparse";
@@ -222,7 +230,6 @@ export default defineComponent({
       }
 
       try {
-        // this.batchApprove(await this.queryChainId(), accelerate)
         let baseInfo: BaseInfo = await this.queryChainId();
         //@ts-ignore
         baseInfo["address"] = this.data[0]["钱包地址"];
@@ -369,6 +376,9 @@ export default defineComponent({
         },
       });
     },
+    fillSpender() {
+      this.spender = "0x1E0049783F008A0085193E00003D00cd54003c71";
+    }
   },
 });
 </script>
