@@ -188,7 +188,6 @@
 </template>
 
 <script lang="ts">
-//@ts-nocheck
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -226,6 +225,7 @@ export default defineComponent({
       locale: zhCN,
       platform: process.platform,
       visible: ref<boolean>(false),
+      //@ts-ignore
       selectedKeys: ref<string[]>(store().selectedKeys),
       openKeys: ref<string[]>([]),
       paths: ref<string[]>(["开始使用"]),
@@ -252,11 +252,12 @@ export default defineComponent({
     };
   },
   beforeMount() {
-    //恢复到最近路由路径
+    //@ts-ignore 恢复到最近路由路径
     this.$router.push(this.store.currentPath).then(() => {
       //面包屑导航
       this.paths = [];
       this.$route.matched.forEach((v, _i, _a) => {
+        //@ts-ignore
         this.paths.push(v.name);
       });
 
@@ -274,6 +275,7 @@ export default defineComponent({
   },
   mounted() {
     let height =
+      //@ts-ignore
       this.$refs.sider.$el.offsetHeight - this.$refs.header.$el.offsetHeight;
     height -= 48;
     this.height = height;
@@ -309,6 +311,7 @@ export default defineComponent({
         //面包屑导航
         this.paths = [];
         this.$route.matched.forEach((v, _i, _a) => {
+          //@ts-ignore
           this.paths.push(v.name);
         });
         //存储全局路由路径
@@ -325,6 +328,7 @@ export default defineComponent({
         this.showModal();
         return;
       }
+      //@ts-ignore
       this.store.changeMainnet(value);
 
       clearInterval(this.interval);
