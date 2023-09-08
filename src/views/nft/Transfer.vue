@@ -75,18 +75,18 @@
       <a-col flex="0 1 138.83px">
         <a-popconfirm
           placement="bottomRight"
-          title="授权「NFT」"
+          title="发送「NFT」"
           ok-text="确认"
           cancel-text="取消"
           @confirm="transferNfts(false)"
         >
-          <a-button type="primary">授权「NFT」</a-button>
+          <a-button type="primary">发送「NFT」</a-button>
         </a-popconfirm>
       </a-col>
       <a-col flex="0 1">
         <a-popconfirm
           placement="bottomRight"
-          title="加速授权「NFT」"
+          title="加速发送「NFT」"
           ok-text="确认"
           cancel-text="取消"
           @confirm="transferNfts(true)"
@@ -95,7 +95,7 @@
             <template #title>
               <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
             </template>
-            <a-button type="primary">加速授权「NFT」</a-button>
+            <a-button type="primary">加速发送「NFT」</a-button>
           </a-tooltip>
         </a-popconfirm>
       </a-col>
