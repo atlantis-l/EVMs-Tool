@@ -32,6 +32,13 @@
         </ul>
       </li>
       <li>钱包授权</li>
+      <li>
+        NFT
+        <ul>
+          <li>转账</li>
+          <li>授权</li>
+        </ul>
+      </li>
       <li>钱包创建</li>
       <li>
         <blockquote>
