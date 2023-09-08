@@ -265,6 +265,10 @@ export default defineComponent({
       let txData;
       let items: any[] = [];
 
+      if (this.NftIds.endsWith(",")) {
+        this.NftIds = this.NftIds.substring(0, this.NftIds.length - 1);
+      }
+
       if ((await this.nftType) === "ERC-721") {
         this.NftIds.split(",").forEach((v, _i, _a) => {
           items.push({
@@ -337,6 +341,10 @@ export default defineComponent({
       }
 
       let items: any[] = [];
+
+      if (this.NftIds.endsWith(",")) {
+        this.NftIds = this.NftIds.substring(0, this.NftIds.length - 1);
+      }
 
       if ((await this.nftType) === "ERC-721") {
         this.NftIds.split(",").forEach((v, _i, _a) => {
