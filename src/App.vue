@@ -21,7 +21,7 @@
 
         <a-menu
           theme="dark"
-          mode="inline"
+          mode="inline" 
           @click="menuClick"
           v-model:selectedKeys="selectedKeys"
           v-model:openKeys="openKeys"
