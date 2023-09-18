@@ -361,8 +361,8 @@ export default defineComponent({
         this.contractAddress = o["合约地址"];
       });
     },
-    async queryNonce() {
-      await this.store.queryNonce(
+    queryNonce() {
+      this.store.queryNonce(
         this.data,
         this.nonceMap,
         "钱包授权",

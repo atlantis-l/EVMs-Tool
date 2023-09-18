@@ -272,9 +272,6 @@ export default defineComponent({
         "高级调用"
       );
     },
-    async data() {
-      await this.queryNonce();
-    },
     "nonceMap.size"() {
       if (this.nonceMap.size == this.data.length) {
         message("success", "刷新「Nonce」", "「Nonce」已刷新");
@@ -398,17 +395,12 @@ export default defineComponent({
     },
     //Gas估算
     async estimateGas() {
-      if (this.contractAddress.trim().length === 0 || this.data.length === 0) {
-        message("warning", "燃料限制估算", "信息未填充完整或钱包文件未导入");
-        return;
-      }
-
-      if (this.contractABI.trim().length === 0) {
-        message("warning", "燃料限制估算", "信息未填充完整或钱包文件未导入");
-        return;
-      }
-
-      if (this.functionName === undefined) {
+      if (
+        this.contractAddress.trim().length === 0 ||
+        this.data.length === 0 ||
+        this.contractABI.trim().length === 0 ||
+        this.functionName === undefined
+      ) {
         message("warning", "燃料限制估算", "信息未填充完整或钱包文件未导入");
         return;
       }
@@ -476,8 +468,8 @@ export default defineComponent({
         this.contractAddress = o["合约地址"];
       });
     },
-    async queryNonce() {
-      await this.store.queryNonce(
+    queryNonce() {
+      this.store.queryNonce(
         this.data,
         this.nonceMap,
         "高级调用",

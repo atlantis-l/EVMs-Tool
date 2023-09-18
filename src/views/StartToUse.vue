@@ -56,12 +56,6 @@
   </article>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-
-export default defineComponent({});
-</script>
-
 <style scoped>
 @font-face {
   font-family: octicons-link;

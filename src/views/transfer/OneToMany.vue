@@ -137,13 +137,6 @@ import { TransactionConfig } from "web3-core";
 import { FileAddFilled } from "@ant-design/icons-vue";
 import BigNumber from "bignumber.js";
 
-interface BaseInfo {
-  nonce: number;
-  chainId: number;
-  address?: string;
-  privateKey?: string;
-}
-
 export default defineComponent({
   components: {
     FileAddFilled,
@@ -254,6 +247,7 @@ export default defineComponent({
 
         this.transfer(baseInfo, accelerate);
 
+        //@ts-ignore
         baseInfo["nonce"] += 1;
       }
     },

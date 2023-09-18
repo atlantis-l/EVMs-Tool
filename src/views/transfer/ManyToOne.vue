@@ -239,9 +239,6 @@ export default defineComponent({
         "多转一"
       );
     },
-    async data() {
-      this.queryNonce();
-    },
     "nonceMap.size"() {
       if (this.nonceMap.size == this.data.length) {
         message("success", "刷新「Nonce」", "「Nonce」已刷新");
@@ -412,7 +409,7 @@ export default defineComponent({
       try {
         this.currentGas = await this.contract.methods
           .transfer(this.toAddress, balance)
-        //@ts-ignore
+          //@ts-ignore
           .estimateGas({ from: this.data[0]["钱包地址"] });
 
         this.currentGas = new BigNumber(this.currentGas).plus("1000").toFixed();
@@ -441,8 +438,8 @@ export default defineComponent({
         this.contractAddress = o["合约地址"];
       });
     },
-    async queryNonce() {
-      await this.store.queryNonce(
+    queryNonce() {
+      this.store.queryNonce(
         this.data,
         this.nonceMap,
         "代币转账",

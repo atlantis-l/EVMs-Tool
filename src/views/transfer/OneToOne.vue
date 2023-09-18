@@ -134,11 +134,6 @@ import { message, abi, convertDecimalsToUnit } from "../../common";
 import { TransactionConfig } from "web3-core";
 import BigNumber from "bignumber.js";
 
-interface BaseInfo {
-  nonce: number;
-  chainId: number;
-}
-
 export default defineComponent({
   data() {
     return {
