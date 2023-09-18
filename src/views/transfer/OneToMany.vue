@@ -132,11 +132,9 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import store from "../../stores/store";
-import { message, abi, convertDecimalsToUnit, sleep, Data } from "../../common";
+import { message, abi, convertDecimalsToUnit, sleep } from "../../common";
 import { TransactionConfig } from "web3-core";
 import { FileAddFilled } from "@ant-design/icons-vue";
-import Papa from "papaparse";
-import FileSaver from "file-saver";
 import BigNumber from "bignumber.js";
 
 interface BaseInfo {
@@ -167,7 +165,7 @@ export default defineComponent({
       //根据合约小数位数转换为以太单位
       unit: ref<string>(""),
       //CSV文件数据
-      data: ref<string[]>([]),
+      data: ref<Object[]>([]),
       //查询成功钱包数量
       checkedWallets: ref<string[][]>([]),
       //查询失败钱包数量
@@ -181,7 +179,7 @@ export default defineComponent({
       //Wei To Ether转换
       fromWei: store().web3.utils.fromWei,
       //文件列表
-      fileList: ref<object[]>([]),
+      fileList: [],
     };
   },
   computed: {
@@ -199,42 +197,22 @@ export default defineComponent({
     },
     //合约对象
     contract() {
-      return new this.store.web3.eth.Contract(abi, this.contractAddress);
+      return this.store.getContract(abi, this.contractAddress);
     },
     //查询总次数
     txCount() {
       return this.checkedWallets.length + this.failedWallets.length;
     },
     totalTransferAmount() {
-      if (this.transferAmount.trim().length === 0) return 0;
-      if (this.data.length === 0) return 0;
+      if (this.transferAmount.trim().length === 0 || this.data.length === 0)
+        return 0;
+
       return new BigNumber(
         this.data.length * parseFloat(this.transferAmount)
       ).toFixed();
     },
     totalFee() {
-      if (this.store.tokenType === "原生代币") {
-        if (this.maxFeePerGas.trim().length === 0) return 0;
-        if (this.data.length === 0) return 0;
-        return this.fromWei(
-          parseFloat(this.toWei(this.maxFeePerGas, "Gwei")) *
-            21000 *
-            this.data.length +
-            "",
-          "ether"
-        );
-      } else {
-        if (this.maxFeePerGas.trim().length === 0) return 0;
-        if (this.gas.trim().length === 0) return 0;
-        if (this.data.length === 0) return 0;
-        return this.fromWei(
-          parseFloat(this.toWei(this.maxFeePerGas, "Gwei")) *
-            parseFloat(this.gas) *
-            this.data.length +
-            "",
-          "ether"
-        );
-      }
+      return this.store.getTotalFee(this.maxFeePerGas, this.data, this.gas);
     },
   },
   watch: {
@@ -244,28 +222,14 @@ export default defineComponent({
       this.unit = convertDecimalsToUnit(decimals);
     },
     txCount(v) {
-      if (v === this.data.length) {
-        let data: Data = {
-          fields: undefined,
-          data: undefined,
-        };
-
-        if (this.store.tokenType === "原生代币") {
-          data.fields = ["钱包地址", "钱包私钥", "交易哈希"];
-        } else {
-          data.fields = ["钱包地址", "钱包私钥", "交易哈希"];
-        }
-
-        data.data = this.checkedWallets.concat(this.failedWallets);
-
-        //@ts-ignore
-        const result = Papa.unparse(data);
-
-        FileSaver.saveAs(
-          new Blob([result], { type: "text/plain;charset=utf-8" }),
-          "一转多.csv"
-        );
-      }
+      this.store.getTxDownload(
+        v,
+        this.data,
+        new Map(),
+        this.checkedWallets,
+        this.failedWallets,
+        "一转多"
+      );
     },
   },
   methods: {
@@ -287,8 +251,6 @@ export default defineComponent({
         await sleep(i);
         //@ts-ignore
         baseInfo["address"] = this.data[i]["钱包地址"];
-        //@ts-ignore
-        baseInfo["privateKey"] = this.data[i]["钱包私钥"];
 
         this.transfer(baseInfo, accelerate);
 
@@ -296,10 +258,7 @@ export default defineComponent({
       }
     },
     //执行转账
-    async transfer(
-      { nonce, chainId, address, privateKey }: BaseInfo,
-      accelerate: boolean
-    ) {
+    async transfer({ nonce, chainId, address }: BaseInfo, accelerate: boolean) {
       const config: TransactionConfig = {
         // from?: string | number;
         from: this.fromAddress,
@@ -326,18 +285,25 @@ export default defineComponent({
         config.gas = this.gas;
       }
 
-      if (accelerate) {
-        config.gasPrice = this.toWei(this.maxFeePerGas, "gwei");
-      } else {
-        config.maxFeePerGas = this.toWei(this.maxFeePerGas, "gwei");
-        config.maxPriorityFeePerGas = this.toWei(
-          this.store.maxPriorityFeePerGas,
-          "gwei"
-        );
-      }
+      this.store.setGasStratgy(accelerate, config, this.maxFeePerGas);
 
-      //@ts-ignore
-      this.sendTransaction(config, address, privateKey);
+      let success = (address: string, txHash: string) => {
+        this.checkedWallets.push([address, txHash]);
+      };
+
+      let reject = (error: Error, address: string) => {
+        console.error(error);
+        this.failedWallets.push([address, "交易失败"]);
+      };
+
+      this.store.sendTransaction(
+        config,
+        //@ts-ignore
+        address,
+        this.privateKey,
+        success,
+        reject
+      );
     },
     //Gas估算
     async estimateGas() {
@@ -371,38 +337,12 @@ export default defineComponent({
         chainId: await this.store.web3.eth.getChainId(),
       };
     },
-    //发送交易
-    sendTransaction(
-      config: TransactionConfig,
-      address: string,
-      privateKey: string
-    ) {
-      this.web3.eth
-        .sendTransaction(config)
-        .once("transactionHash", (txHash) => {
-          this.checkedWallets.push([address, privateKey, txHash]);
-        })
-        .catch((error) => {
-          console.error(error);
-          this.failedWallets.push([address, privateKey, "交易失败"]);
-        });
-    },
     importWalletFile() {
-      //@ts-ignore
-      this.fileList = [this.fileList[this.fileList.length - 1]];
-      const csvFile = new File(
+      this.store.importWalletFile(this.fileList, this.data, (o: Object) => {
         //@ts-ignore
-        [this.fileList[0].originFileObj],
+        if (!o["合约地址"]) return;
         //@ts-ignore
-        this.fileList[0].name
-      );
-      Papa.parse(csvFile, {
-        skipEmptyLines: "greedy",
-        header: true,
-        complete: (result, _file) => {
-          //@ts-ignore
-          this.data = result.data;
-        },
+        this.contractAddress = o["合约地址"];
       });
     },
   },

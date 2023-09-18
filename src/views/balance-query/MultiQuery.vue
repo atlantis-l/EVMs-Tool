@@ -74,9 +74,9 @@ export default defineComponent({
       //查询失败钱包数量
       failedWallets: ref<string[][]>([]),
       //文件列表
-      fileList: ref<object[]>([]),
+      fileList: [],
       //CSV文件数据
-      data: ref<string[]>([]),
+      data: ref<Object[]>([]),
       //合约代币精度
       decimals: ref<string>(""),
     };
@@ -88,7 +88,7 @@ export default defineComponent({
     },
     //合约对象
     contract() {
-      return new this.web3.eth.Contract(abi, this.contractAddress);
+      return this.store.getContract(abi, this.contractAddress);
     },
     //查询总次数
     queryCount() {
@@ -136,8 +136,19 @@ export default defineComponent({
       this.failedWallets = [];
       const failedWalletsSet = new Set<string>();
 
+      if (this.data.length === 0) {
+        message("warning", "余额查询", "文件未导入");
+        return;
+      }
+
       //获取合约代币精度
       if (this.store.tokenType === "合约代币") {
+        if (
+          this.contractAddress.trim().length === 0
+        ) {
+          message("warning", "余额查询", "合约地址未导入");
+          return;
+        }
         try {
           this.decimals = await this.contract.methods.decimals().call();
         } catch (_) {
@@ -218,21 +229,11 @@ export default defineComponent({
       }
     },
     importWalletFile() {
-      this.fileList = [this.fileList[this.fileList.length - 1]];
-
-      const csvFile = new File(
+      this.store.importWalletFile(this.fileList, this.data, (o: Object) => {
         //@ts-ignore
-        [this.fileList[0].originFileObj],
+        if (!o["合约地址"]) return;
         //@ts-ignore
-        this.fileList[0].name
-      );
-      Papa.parse(csvFile, {
-        skipEmptyLines: "greedy",
-        header: true,
-        complete: (result, _file) => {
-          //@ts-ignore
-          this.data = result.data;
-        },
+        this.contractAddress = o["合约地址"];
       });
     },
   },

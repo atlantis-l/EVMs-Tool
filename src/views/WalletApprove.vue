@@ -132,20 +132,10 @@
 <script lang="ts">
 import { defineComponent, ref, reactive } from "vue";
 import store from "../stores/store";
-import { message, abi, convertDecimalsToUnit, sleep, Data } from "../common";
+import { message, abi, convertDecimalsToUnit, sleep } from "../common";
 import { TransactionConfig } from "web3-core";
 import { FileAddFilled } from "@ant-design/icons-vue";
-import Papa from "papaparse";
-import FileSaver from "file-saver";
 import BigNumber from "bignumber.js";
-
-interface BaseInfo {
-  nonce?: number;
-  chainId?: number;
-  address?: string;
-  privateKey?: string;
-  balance?: string;
-}
 
 export default defineComponent({
   components: {
@@ -168,7 +158,7 @@ export default defineComponent({
       //根据合约小数位数转换为以太单位
       unit: "",
       //CSV文件数据
-      data: ref<string[]>([]),
+      data: ref<Object[]>([]),
       //Nonce Map
       nonceMap: reactive(new Map()),
       //查询成功钱包数量
@@ -195,57 +185,25 @@ export default defineComponent({
     },
     //合约对象
     contract() {
-      return new this.store.web3.eth.Contract(abi, this.contractAddress);
+      return this.store.getContract(abi, this.contractAddress);
     },
     //查询总次数
     txCount() {
       return this.checkedWallets.length + this.failedWallets.length;
     },
     totalTransferAmount() {
-      if (this.data.length === 0) return 0;
-      if (
-        this.approveAmount.trim().length === 0 &&
-        //@ts-ignore
-        this.data[0]["钱包余额"] === undefined
-      )
+      if (this.data.length === 0 || this.approveAmount.trim().length === 0)
         return 0;
-
-      if (this.approveAmount.trim().length === 0) {
-        let total = new BigNumber(0);
-        for (let i = 0; i < this.data.length; i++) {
-          //@ts-ignore
-          total = total.plus(this.data[i]["钱包余额"]);
-        }
-        //@ts-ignore
-        return this.fromWei(total.toFixed(), this.unit);
-      }
 
       return new BigNumber(
         this.data.length * parseFloat(this.approveAmount)
       ).toFixed();
     },
     singleFee() {
-      if (this.maxFeePerGas.trim().length === 0) return 0;
-      if (this.gas.trim().length === 0) return 0;
-      if (this.data.length === 0) return 0;
-      return this.fromWei(
-        parseFloat(this.toWei(this.maxFeePerGas, "Gwei")) *
-          parseFloat(this.gas) +
-          "",
-        "ether"
-      );
+      return this.store.getSingleFee(this.maxFeePerGas, this.data, this.gas);
     },
     totalFee() {
-      if (this.maxFeePerGas.trim().length === 0) return 0;
-      if (this.gas.trim().length === 0) return 0;
-      if (this.data.length === 0) return 0;
-      return this.fromWei(
-        parseFloat(this.toWei(this.maxFeePerGas, "Gwei")) *
-          parseFloat(this.gas) *
-          this.data.length +
-          "",
-        "ether"
-      );
+      return this.store.getTotalFee(this.maxFeePerGas, this.data, this.gas);
     },
   },
   watch: {
@@ -257,29 +215,14 @@ export default defineComponent({
       } catch (_error) {}
     },
     txCount(v) {
-      if (v === this.data.length) {
-        this.nonceMap.clear();
-
-        let data: Data = {
-          fields: undefined,
-          data: undefined,
-        };
-
-        data.fields = ["钱包地址", "交易哈希"];
-
-        data.data = this.checkedWallets.concat(this.failedWallets);
-
-        //@ts-ignore
-        const result = Papa.unparse(data);
-
-        FileSaver.saveAs(
-          new Blob([result], { type: "text/plain;charset=utf-8" }),
-          "钱包授权.csv"
-        );
-      }
-    },
-    async data() {
-      this.queryNonce();
+      this.store.getTxDownload(
+        v,
+        this.data,
+        this.nonceMap,
+        this.checkedWallets,
+        this.failedWallets,
+        "钱包授权"
+      );
     },
     "nonceMap.size"() {
       if (this.nonceMap.size == this.data.length) {
@@ -313,7 +256,10 @@ export default defineComponent({
       }
 
       try {
-        this.batchApprove(await this.queryChainId(), accelerate);
+        this.batchApprove(
+          { chainId: await this.store.getChainId() },
+          accelerate
+        );
       } catch (e) {
         console.error(e);
         message("warning", "钱包授权", "执行出错,请重新执行");
@@ -367,30 +313,27 @@ export default defineComponent({
       config.data = txData;
       config.gas = this.gas;
 
-      if (accelerate) {
-        config.gasPrice = this.toWei(this.maxFeePerGas, "gwei");
-      } else {
-        config.maxFeePerGas = this.toWei(this.maxFeePerGas, "gwei");
-        config.maxPriorityFeePerGas = this.toWei(
-          this.store.maxPriorityFeePerGas,
-          "gwei"
-        );
-      }
+      this.store.setGasStratgy(accelerate, config, this.maxFeePerGas);
+
+      let success = (address: string, txHash: string) => {
+        this.checkedWallets.push([address, txHash]);
+      };
+
+      let reject = (error: Error, address: string) => {
+        console.error(error);
+        this.failedWallets.push([address, "交易失败"]);
+      };
 
       //@ts-ignore
-      this.sendTransaction(config, address, privateKey);
+      this.store.sendTransaction(config, address, privateKey, success, reject);
     },
     //Gas估算
     async estimateGas() {
-      if (this.contractAddress.trim().length === 0 || this.data.length === 0) {
-        message("warning", "燃料限制估算", "信息未填充完整或钱包文件未导入");
-        return;
-      }
-
       if (
-        this.approveAmount.trim().length === 0 &&
-        //@ts-ignore
-        this.data[0]["钱包余额"] === undefined
+        this.contractAddress.trim().length === 0 ||
+        this.data.length === 0 ||
+        this.spender.trim().length === 0 ||
+        this.approveAmount.trim().length === 0
       ) {
         message("warning", "燃料限制估算", "信息未填充完整或钱包文件未导入");
         return;
@@ -401,106 +344,30 @@ export default defineComponent({
           this.spender,
           //@ts-ignore
           this.toWei(this.approveAmount.trim(), this.unit)
-          //@ts-ignore
         )
-        .estimateGas({ from: this.web3.eth.accounts.create().address });
+        //@ts-ignore
+        .estimateGas({ from: this.data[0]["钱包地址"] });
 
       this.currentGas = new BigNumber(this.currentGas).plus("1000").toFixed();
 
       message("success", "燃料限制估算", this.currentGas);
     },
-    //查询chainId
-    async queryChainId() {
-      return {
-        chainId: await this.store.web3.eth.getChainId(),
-      };
-    },
-    //发送交易
-    sendTransaction(
-      config: TransactionConfig,
-      address: string,
-      privateKey: string
-    ) {
-      //TODO send signed transaction
-      this.web3.eth.accounts.signTransaction(
-        config,
-        privateKey,
-        (_error, signedTransaction) => {
-          this.web3.eth
-            .sendSignedTransaction(
-              //@ts-ignore
-              signedTransaction.rawTransaction
-            )
-            .once("transactionHash", (txHash) => {
-              this.checkedWallets.push([address, txHash]);
-            })
-            .catch((error) => {
-              console.error(error);
-              this.failedWallets.push([address, "交易失败"]);
-            });
-        }
-      );
-    },
     importWalletFile() {
-      //@ts-ignore
-      this.fileList = [this.fileList[this.fileList.length - 1]];
-      const csvFile = new File(
+      this.store.importWalletFile(this.fileList, this.data, (o: Object) => {
+        this.queryNonce();
         //@ts-ignore
-        [this.fileList[0].originFileObj],
+        if (!o["合约地址"]) return;
         //@ts-ignore
-        this.fileList[0].name
-      );
-      Papa.parse(csvFile, {
-        skipEmptyLines: "greedy",
-        header: true,
-        complete: (result, _file) => {
-          //@ts-ignore
-          this.data = result.data;
-          //@ts-ignore
-          if (this.data[0]["合约地址"]) {
-            //@ts-ignore
-            this.contractAddress = this.data[0]["合约地址"];
-          }
-        },
+        this.contractAddress = o["合约地址"];
       });
     },
     async queryNonce() {
-      if (this.data.length === 0) {
-        message("warning", "钱包授权", "钱包文件未导入");
-        return;
-      }
-
-      this.loading = true;
-      this.nonceMap.clear();
-
-      let batchRequest = new this.web3.eth.BatchRequest();
-
-      for (let i = 0; i < this.data.length; i++) {
-        const request = this.web3.eth.getTransactionCount
-          //@ts-ignore
-          .request(this.data[i]["钱包地址"], (error, nonce) => {
-            if (!error) {
-              //@ts-ignore
-              this.nonceMap.set(this.data[i]["钱包地址"], nonce);
-            }
-          });
-
-        batchRequest.add(request);
-
-        //执行100次批量查询后暂停5秒
-        await sleep(i / 100);
-
-        //每100个钱包作为一次批量查询
-        if ((i + 1) % 100 === 0) {
-          batchRequest.execute();
-          batchRequest = new this.web3.eth.BatchRequest();
-        }
-      }
-
-      //查询最后未满100个钱包的批量查询
-      if (this.data.length % 100 !== 0) {
-        batchRequest.execute();
-      }
+      await this.store.queryNonce(
+        this.data,
+        this.nonceMap,
+        "钱包授权",
+        () => (this.loading = true)
+      );
     },
   },
 });

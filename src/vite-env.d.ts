@@ -9,3 +9,11 @@ declare module "*.vue" {
 interface Event {
   keyPath: string[];
 }
+
+interface BaseInfo {
+  nonce?: number;
+  chainId?: number;
+  address?: string;
+  privateKey?: string;
+  balance?: string;
+}

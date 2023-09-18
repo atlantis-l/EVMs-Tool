@@ -80,7 +80,7 @@ export default defineComponent({
     },
     //合约对象
     contract() {
-      return new this.web3.eth.Contract(abi, this.contractAddress);
+      return this.store.getContract(abi, this.contractAddress);
     },
     address() {
       if (this.queryBaseType === "钱包地址") {

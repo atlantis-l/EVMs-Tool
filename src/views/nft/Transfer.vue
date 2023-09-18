@@ -119,16 +119,7 @@ import store from "../../stores/store";
 import { message, os_abi, erc1155_abi, nft_abi } from "../../common";
 import { TransactionConfig } from "web3-core";
 import { FileAddFilled } from "@ant-design/icons-vue";
-import Papa from "papaparse";
 import BigNumber from "bignumber.js";
-
-interface BaseInfo {
-  nonce?: number;
-  chainId?: number;
-  address?: string;
-  privateKey?: string;
-  balance?: string;
-}
 
 const osContractAddress = "0x0000000000c2d145a2526bD8C716263bFeBe1A72";
 
@@ -169,7 +160,7 @@ export default defineComponent({
   computed: {
     //合约对象
     contract() {
-      return new this.store.web3.eth.Contract(os_abi, osContractAddress);
+      return this.store.getContract(os_abi, osContractAddress);
     },
     async nftType() {
       try {
@@ -200,15 +191,7 @@ export default defineComponent({
     },
     //NFT授权所需矿工费
     singleFee() {
-      if (this.maxFeePerGas.trim().length === 0) return 0;
-      if (this.gas.trim().length === 0) return 0;
-      if (this.data.length === 0) return 0;
-      return this.fromWei(
-        parseFloat(this.toWei(this.maxFeePerGas, "Gwei")) *
-          parseFloat(this.gas) +
-          "",
-        "ether"
-      );
+      return this.store.getSingleFee(this.maxFeePerGas, this.data, this.gas);
     },
   },
   methods: {
@@ -263,37 +246,12 @@ export default defineComponent({
       };
 
       let txData;
-      let items: any[] = [];
-
-      if (this.NftIds.endsWith(",")) {
-        this.NftIds = this.NftIds.substring(0, this.NftIds.length - 1);
-      }
-
-      if ((await this.nftType) === "ERC-721") {
-        this.NftIds.split(",").forEach((v, _i, _a) => {
-          items.push({
-            itemType: 2,
-            token: this.contractAddress,
-            identifier: v,
-            amount: 1,
-          });
-        });
-      } else {
-        this.NftIds.split(",").forEach((v, _i, _a) => {
-          items.push({
-            itemType: 3,
-            token: this.contractAddress,
-            identifier: v,
-            amount: 1,
-          });
-        });
-      }
 
       txData = this.contract.methods
         .bulkTransfer(
           [
             {
-              items: items,
+              items: await this.transformNftIdsToArrays(),
               recipient: this.toAddress,
               validateERC721Receiver: true,
             },
@@ -306,18 +264,19 @@ export default defineComponent({
       config.data = txData;
       config.gas = this.gas;
 
-      if (accelerate) {
-        config.gasPrice = this.toWei(this.maxFeePerGas, "gwei");
-      } else {
-        config.maxFeePerGas = this.toWei(this.maxFeePerGas, "gwei");
-        config.maxPriorityFeePerGas = this.toWei(
-          this.store.maxPriorityFeePerGas,
-          "gwei"
-        );
-      }
+      this.store.setGasStratgy(accelerate, config, this.maxFeePerGas);
+
+      let success = (_address: string, _txHash: string) => {
+        message("success", "NFT转账", "交易已发送");
+      };
+
+      let reject = (error: Error, _address: string) => {
+        console.error(error);
+        message("error", "NFT转账", "交易发送失败,请重试");
+      };
 
       //@ts-ignore
-      this.sendTransaction(config, address, privateKey);
+      this.store.sendTransaction(config, address, privateKey, success, reject);
     },
     //Gas估算
     async estimateGas() {
@@ -340,6 +299,42 @@ export default defineComponent({
         return;
       }
 
+      try {
+        this.currentGas = await this.contract.methods
+          .bulkTransfer(
+            [
+              {
+                items: await this.transformNftIdsToArrays(),
+                recipient: this.toAddress,
+                validateERC721Receiver: true,
+              },
+            ],
+            "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
+          )
+          //@ts-ignore
+          .estimateGas({ from: this.walletAddress });
+
+        this.currentGas = new BigNumber(this.currentGas).plus("1000").toFixed();
+
+        message("success", "燃料限制估算", this.currentGas);
+      } catch (e) {
+        console.error(e);
+        message("error", "燃料限制估算", "执行出错,请重新执行");
+      }
+    },
+    //查询chainId
+    async queryChainId() {
+      return {
+        chainId: await this.store.web3.eth.getChainId(),
+      };
+    },
+    importWalletFile() {
+      this.store.importWalletFile(this.fileList, this.data, (o: Object) => {
+        //@ts-ignore
+        this.walletAddress = o["钱包地址"];
+      });
+    },
+    async transformNftIdsToArrays() {
       let items: any[] = [];
 
       if (this.NftIds.endsWith(",")) {
@@ -365,80 +360,7 @@ export default defineComponent({
           });
         });
       }
-      try {
-        this.currentGas = await this.contract.methods
-          .bulkTransfer(
-            [
-              {
-                items: items,
-                recipient: this.toAddress,
-                validateERC721Receiver: true,
-              },
-            ],
-            "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
-          )
-          //@ts-ignore
-          .estimateGas({ from: this.data[0]["钱包地址"] });
-
-        this.currentGas = new BigNumber(this.currentGas).plus("1000").toFixed();
-
-        message("success", "燃料限制估算", this.currentGas);
-      } catch (e) {
-        console.error(e);
-        message("error", "燃料限制估算", "执行出错,请重新执行");
-      }
-    },
-    //查询chainId
-    async queryChainId() {
-      return {
-        chainId: await this.store.web3.eth.getChainId(),
-      };
-    },
-    //发送交易
-    sendTransaction(
-      config: TransactionConfig,
-      _address: string,
-      privateKey: string
-    ) {
-      //TODO send signed transaction
-      this.store.web3.eth.accounts.signTransaction(
-        config,
-        privateKey,
-        (_error, signedTransaction) => {
-          this.store.web3.eth
-            .sendSignedTransaction(
-              //@ts-ignore
-              signedTransaction.rawTransaction
-            )
-            .once("transactionHash", (_txHash) => {
-              message("success", "NFT转账", "交易已发送");
-            })
-            .catch((error) => {
-              console.error(error);
-              message("error", "NFT转账", "交易发送失败,请重试");
-            });
-        }
-      );
-    },
-    importWalletFile() {
-      //@ts-ignore
-      this.fileList = [this.fileList[this.fileList.length - 1]];
-      const csvFile = new File(
-        //@ts-ignore
-        [this.fileList[0].originFileObj],
-        //@ts-ignore
-        this.fileList[0].name
-      );
-      Papa.parse(csvFile, {
-        skipEmptyLines: "greedy",
-        header: true,
-        complete: (result, _file) => {
-          //@ts-ignore
-          this.data = result.data;
-          //@ts-ignore
-          this.walletAddress = this.data[0]["钱包地址"];
-        },
-      });
+      return items;
     },
   },
 });

@@ -56,15 +56,29 @@
           :placeholder="store.currentGasPrice"
         ></a-input>
       </a-col>
-      <a-col>
-        <a-alert
-          style="height: 32px; user-select: none"
-          :message="`矿工费:「${gasFee}」`"
-          type="info"
+      <a-col span="6" v-show="store.tokenType !== '原生代币'">
+        <a-input
+          allow-clear
+          :placeholder="currentGas"
+          v-model:value="gas"
+          style="text-align: center"
+          addonBefore="燃料限制"
         />
+      </a-col>
+      <a-col span="6" v-show="store.tokenType !== '原生代币'">
+        <a-button type="primary" @click="estimateGas" ghost
+          >燃料限制估算</a-button
+        >
       </a-col>
     </a-row>
     <a-row type="flex">
+      <a-col>
+        <a-alert
+          style="height: 32px; user-select: none"
+          :message="`矿工费:「${singleFee}」`"
+          type="info"
+        />
+      </a-col>
       <a-col flex="1 0"></a-col>
       <a-col flex="0 1 168px">
         <a-popconfirm
@@ -118,6 +132,7 @@ import { defineComponent, ref } from "vue";
 import store from "../../stores/store";
 import { message, abi, convertDecimalsToUnit } from "../../common";
 import { TransactionConfig } from "web3-core";
+import BigNumber from "bignumber.js";
 
 interface BaseInfo {
   nonce: number;
@@ -143,8 +158,10 @@ export default defineComponent({
       transferAmount: ref<string>(""),
       //最大燃料价格
       maxFeePerGas: ref<string>(""),
-      //所需燃料
-      gasFee: ref<string>("0"),
+      //当前估计Gas
+      currentGas: ref<string>(""),
+      //燃料限制
+      gas: ref<string>(""),
       //Ether To Wei转换
       toWei: store().web3.utils.toWei,
       //Wei To Ether转换
@@ -191,7 +208,7 @@ export default defineComponent({
     },
     //合约对象
     contract() {
-      return new this.store.web3.eth.Contract(abi, this.contractAddress);
+      return this.store.getContract(abi, this.contractAddress);
     },
     //根据合约小数位数转换为以太单位
     async unit() {
@@ -208,31 +225,9 @@ export default defineComponent({
         )
         .encodeABI();
     },
-    //根据方法和参数计算出所需的燃料数量
-    async gas() {
-      return this.contract.methods
-        .transfer(
-          this.toAddress,
-          this.toWei(this.transferAmount, await this.unit)
-        )
-        .estimateGas({ from: this.fromAddress });
-    },
-  },
-  watch: {
-    async maxFeePerGas() {
-      try {
-        const feePerGas = parseFloat(this.toWei(this.maxFeePerGas, "Gwei"));
-        if (this.store.tokenType === "原生代币") {
-          this.gasFee = this.fromWei(feePerGas * 21000 + "", "ether");
-        } else {
-          this.gasFee = this.fromWei(
-            feePerGas * (await this.gas) + "",
-            "ether"
-          );
-        }
-      } catch (_) {
-        this.gasFee = "0";
-      }
+    //矿工费
+    singleFee() {
+      return this.store.getSingleFee(this.maxFeePerGas, [0], this.gas);
     },
   },
   methods: {
@@ -264,43 +259,74 @@ export default defineComponent({
       } else {
         config.to = this.contractAddress;
         config.data = await this.data;
-        config.gas = await this.gas;
+        config.gas = this.gas;
       }
 
-      if (accelerate) {
-        config.gasPrice = this.toWei(this.maxFeePerGas, "gwei");
-      } else {
-        config.maxFeePerGas = this.toWei(this.maxFeePerGas, "gwei");
-        config.maxPriorityFeePerGas = this.toWei(
-          this.store.maxPriorityFeePerGas,
-          "gwei"
-        );
-      }
+      this.store.setGasStratgy(accelerate, config, this.maxFeePerGas);
 
-      this.sendTransaction(config);
+      let success = (_: string, txHash: string) => {
+        this.addTxHash(txHash);
+      };
+
+      let reject = (error: Error, _: string) => {
+        this.catchError(error);
+      };
+
+      this.store.sendTransaction(
+        config,
+        this.fromAddress,
+        this.privateKey,
+        success,
+        reject
+      );
     },
     //查询nonce和chainId
     async queryBaseInfo(address: string) {
       return {
         nonce: await this.store.web3.eth.getTransactionCount(address),
-        chainId: await this.store.web3.eth.getChainId(),
+        chainId: await this.store.getChainId(),
       };
+    },
+    //Gas估算
+    async estimateGas() {
+      if (
+        this.contractAddress.trim().length === 0 ||
+        this.transferAmount.trim().length === 0 ||
+        this.privateKey.trim().length === 0 ||
+        this.toAddress.trim().length === 0
+      ) {
+        message("warning", "燃料限制估算", "信息未填充完整");
+        return;
+      }
+
+      let amount = this.toWei(this.transferAmount.trim(), await this.unit);
+
+      try {
+        this.currentGas = await this.contract.methods
+          .transfer(this.toAddress, amount)
+          .estimateGas({ from: this.fromAddress });
+
+        this.currentGas = new BigNumber(this.currentGas).plus("1000").toFixed();
+
+        message("success", "燃料限制估算", this.currentGas);
+        //@ts-ignore
+      } catch (e) {
+        //@ts-ignore
+        if (e.message.includes("subtraction overflow")) {
+          message(
+            "warning",
+            "燃料限制估算",
+            `代币余额未达到:「${this.transferAmount.trim()}」`
+          );
+        } else {
+          console.error(e);
+        }
+      }
     },
     //添加txHash到全局存储
     addTxHash(txHash: string) {
       this.store.addTxHash("txHash.oneToOne", txHash);
       message("success", "代币转账", "交易已发送");
-    },
-    //发送交易
-    sendTransaction(config: TransactionConfig) {
-      this.store.web3.eth
-        .sendTransaction(config)
-        .once("transactionHash", (txHash) => {
-          this.addTxHash(txHash);
-        })
-        .catch((e: Error) => {
-          this.catchError(e);
-        });
     },
     //错误处理
     catchError(e: Error) {
