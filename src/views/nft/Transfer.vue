@@ -215,7 +215,7 @@ export default defineComponent({
       }
 
       try {
-        let baseInfo: BaseInfo = await this.queryChainId();
+        let baseInfo: BaseInfo = { chainId: await this.store.getChainId() };
         //@ts-ignore
         baseInfo["address"] = this.data[0]["钱包地址"];
         baseInfo["nonce"] = await this.store.web3.eth.getTransactionCount(
@@ -247,18 +247,7 @@ export default defineComponent({
 
       let txData;
 
-      txData = this.contract.methods
-        .bulkTransfer(
-          [
-            {
-              items: await this.transformNftIdsToArrays(),
-              recipient: this.toAddress,
-              validateERC721Receiver: true,
-            },
-          ],
-          "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
-        )
-        .encodeABI();
+      txData = (await this.bulkTransfer()).encodeABI();
 
       config.to = osContractAddress;
       config.data = txData;
@@ -300,19 +289,9 @@ export default defineComponent({
       }
 
       try {
-        this.currentGas = await this.contract.methods
-          .bulkTransfer(
-            [
-              {
-                items: await this.transformNftIdsToArrays(),
-                recipient: this.toAddress,
-                validateERC721Receiver: true,
-              },
-            ],
-            "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
-          )
-          //@ts-ignore
-          .estimateGas({ from: this.walletAddress });
+        this.currentGas = await (
+          await this.bulkTransfer()
+        ).estimateGas({ from: this.walletAddress });
 
         this.currentGas = new BigNumber(this.currentGas).plus("1000").toFixed();
 
@@ -322,11 +301,17 @@ export default defineComponent({
         message("error", "燃料限制估算", "执行出错,请重新执行");
       }
     },
-    //查询chainId
-    async queryChainId() {
-      return {
-        chainId: await this.store.web3.eth.getChainId(),
-      };
+    async bulkTransfer() {
+      return this.contract.methods.bulkTransfer(
+        [
+          {
+            items: await this.transformNftIdsToArrays(),
+            recipient: this.toAddress,
+            validateERC721Receiver: true,
+          },
+        ],
+        "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
+      );
     },
     importWalletFile() {
       this.store.importWalletFile(this.fileList, this.data, (o: Object) => {
