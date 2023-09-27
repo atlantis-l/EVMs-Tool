@@ -278,7 +278,10 @@ export default defineComponent({
       }
 
       if (!(await this.isApprovedForAll)) {
-        message("warning", "燃料限制估算", "未授权OpenSea,请先进行NFT授权");
+        this.store.changeCurrentPath("/nft/approve");
+        process.env["selectedKeys"] = "nft,approve";
+        process.env["needNftApprove"] = "1";
+        location.reload();
         return;
       }
 
