@@ -210,7 +210,10 @@ export default defineComponent({
       }
 
       if (!(await this.isApprovedForAll)) {
-        message("warning", "NFT转账", "未授权OpenSea,请先进行NFT授权");
+        this.store.changeCurrentPath("/nft/approve");
+        process.env["selectedKeys"] = "nft,approve";
+        process.env["needNftApprove"] = "1";
+        location.reload();
         return;
       }
 

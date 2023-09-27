@@ -44,6 +44,7 @@ export default defineStore("store", {
           ? []
           : process.env["txHash.oneToOne"]?.split(","),
     },
+    needNftApprove: process.env["needNftApprove"],
   }),
   actions: {
     changeMainnet(
