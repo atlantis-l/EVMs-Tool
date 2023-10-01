@@ -28,13 +28,18 @@
         ></a-input>
       </a-col>
       <a-col span="12" v-if="!checked">
-        <a-input
-          style="text-align: center"
-          allow-clear
-          v-model:value="approveNftId"
-          addonBefore="授权状态"
-          placeholder="1:授权 0:取消"
-        ></a-input>
+        <a-tooltip>
+          <template #title>
+            <span>填1,则授权全部NFT<br />填0,则取消全部授权</span>
+          </template>
+          <a-input
+            style="text-align: center"
+            allow-clear
+            v-model:value="approveNftId"
+            addonBefore="授权状态"
+            placeholder="1:授权 0:取消"
+          ></a-input>
+        </a-tooltip>
       </a-col>
       <a-col span="3">
         <a-switch
@@ -120,7 +125,9 @@
         >
           <a-tooltip placement="topRight">
             <template #title>
-              <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
+              <span
+                >当交易长时间未完成时, <br />可以提高燃料价格来加速交易</span
+              >
             </template>
             <a-button type="primary">加速授权「NFT」</a-button>
           </a-tooltip>
@@ -128,13 +135,22 @@
       </a-col>
     </a-row>
     <a-row>
-      <a-col :span="6">
+      <a-col>
         <a-statistic title="钱包地址" :value="walletAddress" />
       </a-col>
     </a-row>
     <a-row>
-      <a-col :span="6">
+      <a-col>
         <a-statistic title="矿工费" :value="singleFee" />
+      </a-col>
+    </a-row>
+    <a-row>
+      <a-col>
+        <a-statistic
+          :value-style="{ 'font-size': '18px' }"
+          title="交易哈希"
+          :value="txHash"
+        />
       </a-col>
     </a-row>
   </div>
@@ -176,6 +192,8 @@ export default defineComponent({
       gas: ref<string>(""),
       //当前估计Gas
       currentGas: ref<string>(""),
+      //交易哈希
+      txHash: ref<string>("0x"),
       //Ether To Wei转换
       toWei: store().web3.utils.toWei,
       //Wei To Ether转换
@@ -268,7 +286,8 @@ export default defineComponent({
 
       this.store.setGasStratgy(accelerate, config, this.maxFeePerGas);
 
-      let success = (_address: string, _txHash: string) => {
+      let success = (_address: string, txHash: string) => {
+        this.txHash = txHash;
         message("success", "NFT授权", "交易已发送");
       };
 

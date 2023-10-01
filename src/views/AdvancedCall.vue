@@ -51,7 +51,7 @@
       type="flex"
     >
       <a-col flex="1 0"></a-col>
-      <a-col flex="0 1 186px">
+      <a-col flex="0 1 206px">
         <a-input
           allow-clear
           v-model:value="maxFeePerGas"
@@ -60,7 +60,7 @@
           :placeholder="store.currentGasPrice"
         ></a-input>
       </a-col>
-      <a-col flex="0 1 186px">
+      <a-col flex="0 1 206px">
         <a-input
           allow-clear
           :placeholder="currentGas"
@@ -115,7 +115,9 @@
         >
           <a-tooltip placement="left">
             <template #title>
-              <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
+              <span
+                >当交易长时间未完成时, <br />可以提高燃料价格来加速交易</span
+              >
             </template>
             <a-button type="primary" :disabled="loading"
               >加速执行「合约调用」</a-button

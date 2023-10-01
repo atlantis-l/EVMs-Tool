@@ -37,7 +37,7 @@ export default defineStore("store", {
     selectedKeys: process.env["selectedKeys"]?.split(","),
     menuFoldState: process.env["menuFoldState"],
     currentGasPrice: "",
-    maxPriorityFeePerGas: "2.5",
+    maxPriorityFeePerGas: "0.01",
     txHash: {
       oneToOne:
         process.env["txHash.oneToOne"]?.split(",")[0].length === 0

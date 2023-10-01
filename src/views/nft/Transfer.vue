@@ -93,7 +93,9 @@
         >
           <a-tooltip placement="topRight">
             <template #title>
-              <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
+              <span
+                >当交易长时间未完成时, <br />可以提高燃料价格来加速交易</span
+              >
             </template>
             <a-button type="primary">加速发送「NFT」</a-button>
           </a-tooltip>
@@ -101,13 +103,22 @@
       </a-col>
     </a-row>
     <a-row>
-      <a-col :span="6">
+      <a-col>
         <a-statistic title="钱包地址" :value="walletAddress" />
       </a-col>
     </a-row>
     <a-row>
-      <a-col :span="6">
+      <a-col>
         <a-statistic title="矿工费" :value="singleFee" />
+      </a-col>
+    </a-row>
+    <a-row>
+      <a-col>
+        <a-statistic
+          :value-style="{ 'font-size': '18px' }"
+          title="交易哈希"
+          :value="txHash"
+        />
       </a-col>
     </a-row>
   </div>
@@ -149,6 +160,8 @@ export default defineComponent({
       gas: ref<string>(""),
       //当前估计Gas
       currentGas: ref<string>(""),
+      //交易哈希
+      txHash: ref<string>("0x"),
       //Ether To Wei转换
       toWei: store().web3.utils.toWei,
       //Wei To Ether转换
@@ -258,7 +271,8 @@ export default defineComponent({
 
       this.store.setGasStratgy(accelerate, config, this.maxFeePerGas);
 
-      let success = (_address: string, _txHash: string) => {
+      let success = (_address: string, txHash: string) => {
+        this.txHash = txHash;
         message("success", "NFT转账", "交易已发送");
       };
 

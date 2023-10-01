@@ -118,13 +118,11 @@
               <a-tooltip placement="leftTop">
                 <template #title>
                   <span style="text-align: center; display: block">
-                    代币切换(举例)
+                    代币切换
                     <br />
-                    【ETH】链【原生代币】为【ETH】
+                    原生代币: 以太链为ETH
                     <br />
-                    【BSC】链【原生代币】为【BNB】
-                    <br />
-                    【合约代币】指代币有【合约地址】
+                    合约代币: 要求合约地址
                   </span>
                 </template>
                 <a-select
@@ -359,11 +357,11 @@ export default defineComponent({
         .getGasPrice((error, gasPrice) => {
           if (error === null) {
             gasPrice = this.store.web3.utils.fromWei(gasPrice, "Gwei");
-            gasPrice =
-              Math.ceil(
-                parseFloat(gasPrice) +
-                  parseFloat(this.store.maxPriorityFeePerGas)
-              ) + "";
+            gasPrice = (
+              parseFloat(gasPrice) +
+              0.001 +
+              parseFloat(this.store.maxPriorityFeePerGas)
+            ).toFixed(4);
             this.store.changeCurrentGasPrice(gasPrice);
           }
         })

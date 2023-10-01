@@ -96,7 +96,9 @@
         >
           <a-tooltip placement="topRight">
             <template #title>
-              <span>当交易长时间未完成时, 可以提高燃料价格来加速交易</span>
+              <span
+                >当交易长时间未完成时, <br />可以提高燃料价格来加速交易</span
+              >
             </template>
             <a-button type="primary"
               >加速交易「{{ store.tokenType }}」</a-button
