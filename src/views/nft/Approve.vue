@@ -202,15 +202,6 @@ export default defineComponent({
       fileList: [],
     };
   },
-  mounted() {
-    setTimeout(() => {
-      if (this.store.needNftApprove === "1") {
-        process.env["needNftApprove"] = "0";
-        this.store.needNftApprove = process.env["needNftApprove"];
-        message("warning", "NFT授权", "未授权OpenSea,请先进行NFT授权");
-      }
-    }, 1000);
-  },
   computed: {
     //合约对象
     contract() {
@@ -349,4 +340,11 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.ant-switch {
+  background-color: #1677ff;
+}
+.ant-switch:hover:not(.ant-switch-disabled) {
+  background-color: #4096ff;
+}
+</style>

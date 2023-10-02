@@ -102,7 +102,7 @@
               <menu-fold-outlined
                 v-else
                 class="trigger"
-                @click="() => store.changeMenuFoldState('fold')"
+                @click="store.changeMenuFoldState('fold')"
               />
             </a-col>
 
@@ -176,7 +176,9 @@
         >
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
-              <component :is="Component" />
+              <KeepAlive>
+                <component :is="Component" />
+              </KeepAlive>
             </transition>
           </router-view>
         </a-layout-content>
@@ -250,6 +252,8 @@ export default defineComponent({
     };
   },
   beforeMount() {
+    //@ts-ignore
+    this.store.appComponent = this;
     //@ts-ignore 恢复到最近路由路径
     this.$router.push(this.store.currentPath).then(() => {
       //面包屑导航
@@ -279,6 +283,26 @@ export default defineComponent({
     this.height = height;
   },
   methods: {
+    //外部调用
+    externalCall() {
+      //@ts-ignore 恢复到最近路由路径
+      this.$router.push(this.store.currentPath).then(() => {
+        //面包屑导航
+        this.paths = [];
+        this.$route.matched.forEach((v, _i, _a) => {
+          //@ts-ignore
+          this.paths.push(v.name);
+        });
+
+        //@ts-ignore
+        this.selectedKeys = this.store.selectedKeys;
+
+        //子菜单开闭
+        if (!this.store.collapsed) {
+          this.setOpenKeys();
+        }
+      });
+    },
     //模态窗口事件
     showModal() {
       this.visible = true;
@@ -316,8 +340,10 @@ export default defineComponent({
         this.store.changeCurrentPath(`/${event.keyPath.join("/")}`);
         //存储全局菜单选中项
         this.store.changeSelectedKeys(event.keyPath);
-        //设置菜单开闭
-        this.setOpenKeys();
+        //子菜单开闭
+        if (!this.store.collapsed) {
+          this.setOpenKeys();
+        }
       });
     },
     //主网切换

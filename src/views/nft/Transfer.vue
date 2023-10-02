@@ -223,10 +223,7 @@ export default defineComponent({
       }
 
       if (!(await this.isApprovedForAll)) {
-        this.store.changeCurrentPath("/nft/approve");
-        process.env["selectedKeys"] = "nft,approve";
-        process.env["needNftApprove"] = "1";
-        location.reload();
+        this.pushToApprove();
         return;
       }
 
@@ -292,10 +289,7 @@ export default defineComponent({
       }
 
       if (!(await this.isApprovedForAll)) {
-        this.store.changeCurrentPath("/nft/approve");
-        process.env["selectedKeys"] = "nft,approve";
-        process.env["needNftApprove"] = "1";
-        location.reload();
+        this.pushToApprove();
         return;
       }
 
@@ -332,6 +326,13 @@ export default defineComponent({
         ],
         "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
       );
+    },
+    pushToApprove() {
+      this.store.changeCurrentPath("/nft/approve");
+      this.store.changeSelectedKeys("nft,approve".split(","));
+      message("warning", "NFT转账", "未授权OpenSea,请先进行NFT授权");
+      //@ts-ignore
+      this.store.appComponent.externalCall();
     },
     importWalletFile() {
       this.store.importWalletFile(this.fileList, this.data, (o: Object) => {

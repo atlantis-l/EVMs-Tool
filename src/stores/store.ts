@@ -30,6 +30,7 @@ export default defineStore("store", {
         timeout: TIMEOUT, //请求超时ms
       })
     ),
+    appComponent: undefined,
     tokenType: process.env["tokenType"],
     showTokenType: false,
     showMainnet: false,
@@ -44,7 +45,6 @@ export default defineStore("store", {
           ? []
           : process.env["txHash.oneToOne"]?.split(","),
     },
-    needNftApprove: process.env["needNftApprove"],
   }),
   actions: {
     changeMainnet(

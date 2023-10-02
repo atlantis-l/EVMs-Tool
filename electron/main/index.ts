@@ -213,4 +213,3 @@ process.env["selectedKeys"] = ["start-to-use"];
 process.env["menuFoldState"] = "unfold";
 //@ts-ignore
 process.env["txHash.oneToOne"] = [];
-process.env["needNftApprove"] = "0";

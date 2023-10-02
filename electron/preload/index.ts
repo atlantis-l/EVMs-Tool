@@ -78,10 +78,13 @@ function useLoading() {
 
 const { appendLoading, removeLoading } = useLoading();
 
-// domReady().then(appendLoading)
+domReady().then(appendLoading)
 
-// setTimeout(removeLoading, 2000)
+setTimeout(removeLoading, 3000)
 
 // ----------------------------------------------------------------------
 
-console.log("%c EVMs Tool v1.0.0", "color:#00FFFF;");
+console.log(
+  "%c   EVMs Tool (本工具仅供学习交流使用, 请勿另作他用!)\n赞赏地址: 0x6eafbeab09A6b0710063f7F1f076436A6b563ccf",
+  "color:#00FFFF;font-size:18px;"
+);
