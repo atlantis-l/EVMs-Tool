@@ -171,9 +171,13 @@ export default defineComponent({
     };
   },
   computed: {
-    //合约对象
+    //OpenSea合约对象
     contract() {
       return this.store.getContract(os_abi, osContractAddress);
+    },
+    //NFT Contract
+    nftContract() {
+      return new this.store.web3.eth.Contract(nft_abi, this.contractAddress);
     },
     async nftType() {
       try {
@@ -188,19 +192,6 @@ export default defineComponent({
       } catch (_e) {
         return "ERC-721";
       }
-    },
-    async isApprovedForAll() {
-      const nftContract = new this.store.web3.eth.Contract(
-        nft_abi,
-        this.contractAddress
-      );
-      return await nftContract.methods
-        .isApprovedForAll(
-          //@ts-ignore
-          this.data[0]["钱包地址"],
-          "0x1E0049783F008A0085193E00003D00cd54003c71"
-        )
-        .call();
     },
     //NFT授权所需矿工费
     singleFee() {
@@ -222,7 +213,7 @@ export default defineComponent({
         return;
       }
 
-      if (!(await this.isApprovedForAll)) {
+      if (!(await this.isApprovedForAll())) {
         this.pushToApprove();
         return;
       }
@@ -288,7 +279,7 @@ export default defineComponent({
         return;
       }
 
-      if (!(await this.isApprovedForAll)) {
+      if (!(await this.isApprovedForAll())) {
         this.pushToApprove();
         return;
       }
@@ -326,6 +317,15 @@ export default defineComponent({
         ],
         "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
       );
+    },
+    async isApprovedForAll() {
+      return await this.nftContract.methods
+        .isApprovedForAll(
+          //@ts-ignore
+          this.data[0]["钱包地址"],
+          "0x1E0049783F008A0085193E00003D00cd54003c71"
+        )
+        .call();
     },
     pushToApprove() {
       this.store.changeCurrentPath("/nft/approve");
