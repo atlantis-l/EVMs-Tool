@@ -202,9 +202,6 @@ export default defineComponent({
       fileList: [],
     };
   },
-  mounted() {
-      this.store.changeTokenType("合约代币");
-  },
   computed: {
     //合约对象
     contract() {

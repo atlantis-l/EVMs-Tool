@@ -28,7 +28,7 @@ export default defineStore("store", {
       new Web3.providers.HttpProvider(process.env["provider"], {
         keepAlive: true,
         timeout: TIMEOUT, //请求超时ms
-      })
+      }),
     ),
     appComponent: undefined,
     tokenType: process.env["tokenType"],
@@ -55,7 +55,7 @@ export default defineStore("store", {
         | "Fantom"
         | "Avalanche"
         | "Arbitrum"
-        | "Optimism"
+        | "Optimism",
     ) {
       process.env["mainnet"] = provider;
       process.env["provider"] = this.providers[provider];
@@ -84,7 +84,7 @@ export default defineStore("store", {
     changeTokenType(type: string) {
       process.env["tokenType"] = type;
       this.tokenType = process.env["tokenType"];
-      message("success", `代币切换`, this.tokenType);
+      // message("success", `代币切换`, this.tokenType);
     },
     changeCurrentPath(path: string) {
       process.env["currentPath"] = path;
@@ -110,7 +110,7 @@ export default defineStore("store", {
       process.env[path] = this.txHash[path.split(".")[1]];
     },
     getSingleFee(maxFeePerGas: string, data: any, gas: string) {
-      if (this.tokenType === "原生代币") {
+      if (this.tokenType === "原生代币" && gas.length === 0) {
         gas = "21000";
       }
 
@@ -123,7 +123,7 @@ export default defineStore("store", {
 
       return fromWei(
         parseFloat(toWei(maxFeePerGas, "Gwei")) * parseFloat(gas) + "",
-        "ether"
+        "ether",
       );
     },
     getTotalFee(maxFeePerGas: string, data: any, gas: string): any {
@@ -143,7 +143,7 @@ export default defineStore("store", {
       address: string,
       privateKey: string,
       success: Function,
-      reject: Function
+      reject: Function,
     ) {
       //send signed transaction
       this.web3.eth.accounts.signTransaction(
@@ -153,7 +153,7 @@ export default defineStore("store", {
           this.web3.eth
             .sendSignedTransaction(
               //@ts-ignore
-              signedTransaction.rawTransaction
+              signedTransaction.rawTransaction,
             )
             .once("transactionHash", (txHash) => {
               success(address, txHash);
@@ -161,7 +161,7 @@ export default defineStore("store", {
             .catch((error) => {
               reject(error, address);
             });
-        }
+        },
       );
     },
     getTxDownload(
@@ -170,7 +170,7 @@ export default defineStore("store", {
       nonceMap: Map<string, string>,
       checkedWallets: string[][],
       failedWallets: string[][],
-      fileName: string
+      fileName: string,
     ) {
       if (v === data.length) {
         nonceMap.clear();
@@ -189,7 +189,7 @@ export default defineStore("store", {
 
         FileSaver.saveAs(
           new Blob([result], { type: "text/plain;charset=utf-8" }),
-          `${fileName}.csv`
+          `${fileName}.csv`,
         );
       }
     },
@@ -197,7 +197,7 @@ export default defineStore("store", {
     setGasStratgy(
       accelerate: boolean,
       config: TransactionConfig,
-      maxFeePerGas: string
+      maxFeePerGas: string,
     ) {
       if (accelerate) {
         config.gasPrice = toWei(maxFeePerGas, "gwei");
@@ -210,7 +210,7 @@ export default defineStore("store", {
       data: object[],
       nonceMap: Map<string, string>,
       name: string,
-      setLoading: Function
+      setLoading: Function,
     ) {
       if (data.length === 0) {
         message("warning", name, "钱包文件未导入");
@@ -276,7 +276,7 @@ export default defineStore("store", {
         new Web3.providers.HttpProvider(state.provider, {
           keepAlive: true,
           timeout: TIMEOUT,
-        })
+        }),
       );
       return state._web;
     },

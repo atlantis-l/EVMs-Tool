@@ -198,9 +198,6 @@ export default defineComponent({
       return this.store.getSingleFee(this.maxFeePerGas, this.data, this.gas);
     },
   },
-  mounted() {
-      this.store.changeTokenType("合约代币");
-  },
   methods: {
     //代币转账
     async transferNfts(accelerate: boolean) {

@@ -207,9 +207,6 @@ export default defineComponent({
       loading: false,
     };
   },
-  mounted() {
-      this.store.changeTokenType("合约代币");
-  },
   computed: {
     web3() {
       return this.store.web3;
