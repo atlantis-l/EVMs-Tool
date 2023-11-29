@@ -14,6 +14,9 @@ export default defineConfig(({ command }) => {
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
   return {
+    build: {
+      chunkSizeWarningLimit: 99999,
+    },
     plugins: [
       vue(),
       electron([

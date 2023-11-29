@@ -310,6 +310,7 @@ export default defineComponent({
     //模态窗口事件
     handleModalOk() {
       if (this.store.changeCustomMainnet(this.customMainnet)) {
+        //@ts-ignore
         clearInterval(this.interval);
 
         this.getCurrentGasPrice();
@@ -355,6 +356,7 @@ export default defineComponent({
       //@ts-ignore
       this.store.changeMainnet(value);
 
+      //@ts-ignore
       clearInterval(this.interval);
 
       this.getCurrentGasPrice();
